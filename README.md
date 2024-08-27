@@ -1,6 +1,2 @@
-# Georgia Travel Guide
-A travel guide to explore famous attractions in all 5 regions of Georgia. This website is made with these utilities:
-- Typescript (React)
-- NextJS
-- ShadCN/ui
-- TailwindCSS
+# PyBricks Blockly
+This program, once completed, will allow you to use Google's Blockly software to code a Spike PRIME robot in block code.
