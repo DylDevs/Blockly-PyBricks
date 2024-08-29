@@ -117,9 +117,15 @@ h3 {
   }
 }
 
-#blocklyDiv {
-  height: 95%;
+#BlocklyMenubar {
+  height: 50px;
   width: 100%;
+}
+
+#blocklyDiv {
   position: absolute;
+  top: 46px;
   bottom: 0;
+  width: 100%;
+  height: calc(100% - 46px);
 }

@@ -1,9 +1,11 @@
 import React from 'react';
-import BlocklyComponent, { Block, Value, Field, Shadow, Category } from '@/components/Blockly/Main';
+import BlocklyComponent, { Category, Block } from '@/components/Blockly/Main';
 import * as Blockly from 'blockly/core';
 import 'blockly/python';
-import '@/components/Blockly/blocks/customblocks';
+import '@/components/customblocks';
 import '@/components/Blockly/generator/generator';
+import { Menubar } from '@/components/ui/menubar';
+import { Button } from '@/components/ui/button';
 
 // @ts-ignore
 const darkTheme = Blockly.Theme.defineTheme('dark', {
@@ -110,6 +112,62 @@ const darkTheme = Blockly.Theme.defineTheme('dark', {
   'startHats': true
 });
 
+function BlocklyMenubar({ workspaceRef } : any) {
+  const handleNewFile = () => {0
+    if (workspaceRef.current) {
+      // Clear the workspace
+      workspaceRef.current.workspace.clear();
+    }
+  };
+
+  const handleLoadFile = () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.xml';
+    fileInput.onchange = (event : any) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e : any) => {
+          const xmlText = e.target.result;
+          // @ts-ignore
+          const xml = Blockly.Xml.textToDom(xmlText);
+          if (workspaceRef.current) {
+            Blockly.Xml.clearWorkspaceAndLoadFromXml(xml, workspaceRef.current.workspace);
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+    fileInput.click();
+  };
+
+  const handleSaveFile = () => {
+    if (workspaceRef.current) {
+      const xml = Blockly.Xml.workspaceToDom(workspaceRef.current.workspace);
+      const xmlText = Blockly.Xml.domToPrettyText(xml);
+      const blob = new Blob([xmlText], { type: 'text/xml' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'workspace.xml';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+  };
+
+  return (
+    <div className='BlocklyMenubar'>
+      <Menubar className='bg-toolbar-bg h-full rounded-none'>
+        <Button onClick={handleNewFile} className='bg-transparent hover:bg-toolbar-button-bg text-white'>New File</Button>
+        <Button onClick={handleLoadFile} className='bg-transparent hover:bg-toolbar-button-bg text-white'>Load File</Button>
+        <Button onClick={handleSaveFile} className='bg-transparent hover:bg-toolbar-button-bg text-white'>Save File</Button>
+        <Button className='bg-transparent hover:bg-toolbar-button-bg text-white'>Run Code</Button>
+      </Menubar>
+    </div>
+  );
+}
+
 function App() {
   const workspaceRef = React.useRef(null);
 
@@ -121,7 +179,7 @@ function App() {
     }
   };
 
-  const downloadPythonFile = (code : any, filename : any) => {
+  const downloadPythonFile = (code, filename) => {
     const blob = new Blob([code], { type: 'text/plain' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -132,8 +190,10 @@ function App() {
   };
 
   return (
-    <div className="h-screen w-screen">
+    <div className="">
       <div className="App">
+        <BlocklyMenubar workspaceRef={workspaceRef} />
+        {/* @ts-ignore */}
         <BlocklyComponent
           ref={workspaceRef}
           readOnly={false}
@@ -144,27 +204,30 @@ function App() {
             drag: true,
             wheel: true,
           }}
-          theme={darkTheme}  // Applying the dark theme here
+          theme={darkTheme}
         >
-          <Category name="Motors" colour="210">
+          <Category name="Motors" colour="#0772c0">
+            <Block type="motor_initialize"></Block>
+            <Block type="motor_run"></Block>
+            <Block type="motor_run_rotations"></Block>
           </Category>
-          <Category name="Movement" colour="120">
+          <Category name="Movement" colour="#9f006f">
           </Category>
-          <Category name="Light" colour="160">
+          <Category name="Light" colour="#320887">
           </Category>
-          <Category name="Sound" colour="330">
+          <Category name="Sound" colour="#610e8c">
           </Category>
-          <Category name="Events" colour="120">
+          <Category name="Events" colour="#c4a005">
           </Category>
-          <Category name="Control" colour="160">
+          <Category name="Control" colour="#946100">
           </Category>
-          <Category name="Sensors" colour="330">
+          <Category name="Sensors" colour="#1188a8">
           </Category>
-          <Category name="Operators" colour="120">
+          <Category name="Operators" colour="#01933f">
           </Category>
-          <Category name="Logic" colour="160">
+          <Category name="Logic" colour="#b85e00">
           </Category>
-          <Category name="Math" colour="330">
+          <Category name="Math" colour="#920302">
           </Category>
         </BlocklyComponent>
       </div>

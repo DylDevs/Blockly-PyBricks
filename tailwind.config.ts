@@ -66,6 +66,8 @@ const config = {
           "accordion-down": "accordion-down 0.1s ease-out",
           "accordion-up": "accordion-up 0.1s ease-out",
         },
+        "toolbar-bg": "#2a2a2a",
+        "toolbar-button-bg": "#555555"
       },
       borderRadius: {
         lg: "var(--radius)",
