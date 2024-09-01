@@ -1,236 +1,103 @@
-import React from 'react';
+// React
+import React, { useRef } from 'react';
+
+// Blockly components
 import BlocklyComponent, { Category, Block } from '@/components/Blockly/Main';
-import * as Blockly from 'blockly/core';
-import 'blockly/python';
+
+// Custom blocks and generator
 import '@/components/customblocks';
-import '@/components/Blockly/generator/generator';
+import { PyBricksGenerator } from '@/components/Blockly/generator/generator';
+
+// UI
 import { Menubar } from '@/components/ui/menubar';
 import { Button } from '@/components/ui/button';
-
-// @ts-ignore
-const darkTheme = Blockly.Theme.defineTheme('dark', {
-  'blockStyles': {
-    'colour_blocks': {
-      'colourPrimary': '#a5745b',
-      'colourSecondary': '#dbc7bd',
-      'colourTertiary': '#845d49'
-    },
-    'list_blocks': {
-      'colourPrimary': '#745ba5',
-      'colourSecondary': '#c7bddb',
-      'colourTertiary': '#5d4984'
-    },
-    'logic_blocks': {
-      'colourPrimary': '#5b80a5',
-      'colourSecondary': '#bdccdb',
-      'colourTertiary': '#496684'
-    },
-    'loop_blocks': {
-      'colourPrimary': '#5ba55b',
-      'colourSecondary': '#bddbbd',
-      'colourTertiary': '#498449'
-    },
-    'math_blocks': {
-      'colourPrimary': '#5b67a5',
-      'colourSecondary': '#bdc2db',
-      'colourTertiary': '#495284'
-    },
-    'procedure_blocks': {
-      'colourPrimary': '#995ba5',
-      'colourSecondary': '#d6bddb',
-      'colourTertiary': '#7a4984'
-    },
-    'text_blocks': {
-      'colourPrimary': '#5ba58c',
-      'colourSecondary': '#bddbd1',
-      'colourTertiary': '#498470'
-    },
-    'variable_blocks': {
-      'colourPrimary': '#a55b99',
-      'colourSecondary': '#dbbdd6',
-      'colourTertiary': '#84497a'
-    },
-    'variable_dynamic_blocks': {
-      'colourPrimary': '#a55b99',
-      'colourSecondary': '#dbbdd6',
-      'colourTertiary': '#84497a'
-    },
-    'hat_blocks': {
-      'colourPrimary': '#a55b99',
-      'colourSecondary': '#dbbdd6',
-      'colourTertiary': '#84497a',
-      'hat': 'cap'
-    }
-  },
-  'categoryStyles': {
-    'colour_category': {
-      'colour': '#a5745b'
-    },
-    'list_category': {
-      'colour': '#745ba5'
-    },
-    'logic_category': {
-      'colour': '#5b80a5'
-    },
-    'loop_category': {
-      'colour': '#5ba55b'
-    },
-    'math_category': {
-      'colour': '#5b67a5'
-    },
-    'procedure_category': {
-      'colour': '#995ba5'
-    },
-    'text_category': {
-      'colour': '#5ba58c'
-    },
-    'variable_category': {
-      'colour': '#a55b99'
-    },
-    'variable_dynamic_category': {
-      'colour': '#a55b99'
-    }
-  },
-  'componentStyles': {
-    'workspaceBackgroundColour': '#333',
-    'toolboxBackgroundColour': '#2a2a2a',
-    'toolboxForegroundColour': '#fff',
-    'flyoutBackgroundColour': '#252526',
-    'flyoutForegroundColour': '#ccc',
-    'flyoutOpacity': 1,
-    'scrollbarColour': '#797979',
-    'insertionMarkerColour': '#fff',
-    'insertionMarkerOpacity': 0.3,
-    'markerColour': '#fff',
-    'cursorColour': '#d0d0d0'
-  },
-  'fontStyle': {
-    'family': 'Roboto Mono',
-    'weight': 'bold',
-    'size': 12
-  },
-  'startHats': true
-});
-
-function BlocklyMenubar({ workspaceRef } : any) {
-  const handleNewFile = () => {0
-    if (workspaceRef.current) {
-      // Clear the workspace
-      workspaceRef.current.workspace.clear();
-    }
-  };
-
-  const handleLoadFile = () => {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = '.xml';
-    fileInput.onchange = (event : any) => {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e : any) => {
-          const xmlText = e.target.result;
-          // @ts-ignore
-          const xml = Blockly.Xml.textToDom(xmlText);
-          if (workspaceRef.current) {
-            Blockly.Xml.clearWorkspaceAndLoadFromXml(xml, workspaceRef.current.workspace);
-          }
-        };
-        reader.readAsText(file);
-      }
-    };
-    fileInput.click();
-  };
-
-  const handleSaveFile = () => {
-    if (workspaceRef.current) {
-      const xml = Blockly.Xml.workspaceToDom(workspaceRef.current.workspace);
-      const xmlText = Blockly.Xml.domToPrettyText(xml);
-      const blob = new Blob([xmlText], { type: 'text/xml' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'workspace.xml';
-      a.click();
-      window.URL.revokeObjectURL(url);
-    }
-  };
-
-  return (
-    <div className='BlocklyMenubar'>
-      <Menubar className='bg-toolbar-bg h-full rounded-none'>
-        <Button onClick={handleNewFile} className='bg-transparent hover:bg-toolbar-button-bg text-white'>New File</Button>
-        <Button onClick={handleLoadFile} className='bg-transparent hover:bg-toolbar-button-bg text-white'>Load File</Button>
-        <Button onClick={handleSaveFile} className='bg-transparent hover:bg-toolbar-button-bg text-white'>Save File</Button>
-        <Button className='bg-transparent hover:bg-toolbar-button-bg text-white'>Run Code</Button>
-      </Menubar>
-    </div>
-  );
-}
+import { toast } from 'sonner';
 
 function App() {
-  const workspaceRef = React.useRef(null);
+  const workspaceRef = useRef(null);
 
-  const generatePythonCode = () => {
-    if (workspaceRef.current) {
-      // @ts-ignore
-      const code = Blockly.Python.workspaceToCode(workspaceRef.current.workspace as Blockly.Workspace);
-      downloadPythonFile(code, 'code.py');
+  function BlocksToCode() {
+    if (!workspaceRef.current) {
+      toast.error('Workspace is not defined!');
+      return 'Workspace is not defined!';
     }
-  };
+    // @ts-ignore || Ensure the code is generated for the entire workspace
+    const workspace = workspaceRef.current.workspace;
+    const code = PyBricksGenerator.workspaceToCode(workspace);
+    return code; // Return the generated code
+  }
 
-  const downloadPythonFile = (code, filename) => {
-    const blob = new Blob([code], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
+  function BlocklyMenubar() {
+    const runCode = () => {
+      let code = BlocksToCode();
+      console.log(code);
+      if (code === '') {
+        toast.error('Workspace is empty!');
+        return;
+      } else if (code === 'Workspace is not defined!') {
+        return;
+      }
+      toast.success('Code successfully generated!');
+    };
+
+    const buttons = ["New File", "Load File", "Save File", "Run Code"];
+    const functions = [undefined, undefined, undefined, runCode];
+
+    return (
+      <div className='BlocklyMenubar'>
+        <Menubar className='bg-toolbar-bg h-full rounded-none'>
+          {buttons.map((button, index) => (
+            <Button
+              key={index}
+              onClick={functions[index]}
+              className='bg-transparent hover:bg-toolbar-button-bg text-white'
+            >
+              {button}
+            </Button>
+          ))}
+        </Menubar>
+      </div>
+    );
+  }
 
   return (
-    <div className="">
-      <div className="App">
-        <BlocklyMenubar workspaceRef={workspaceRef} />
-        {/* @ts-ignore */}
-        <BlocklyComponent
-          ref={workspaceRef}
-          readOnly={false}
-          trashcan={true}
-          media={'/media/'}
-          move={{
-            scrollbars: true,
-            drag: true,
-            wheel: true,
-          }}
-          theme={darkTheme}
-        >
-          <Category name="Motors" colour="#0772c0">
-            <Block type="motor_initialize"></Block>
-            <Block type="motor_run"></Block>
-            <Block type="motor_run_rotations"></Block>
+    <div className="App">
+      <BlocklyMenubar />
+      {/* @ts-ignore || Silences a type error */}
+      <BlocklyComponent
+        ref={workspaceRef}
+        readOnly={false}
+        trashcan={true}
+        media='/'
+        move={{ scrollbars: true, drag: true, wheel: true }}
+      >
+        {[
+          { name: 'Motors', blocks: ['motor_initialize', 'motor_run', 'motor_stop', 'motor_speed_var', 
+            'motor_position_var'], colour: "#0772c0" },
+          { name: 'Movement', blocks: ["movement_initialize", "movement_run", "movement_run_angle", 
+            "movement_stop"], colour: "#9f006f" },
+          { name: 'Events', blocks: ['events_main', 'events_button'], colour: "#c4a005" },
+          { name: 'Control', blocks: ['controls_wait_seconds', 'controls_repeat_times', 'controls_forever', 
+            'controls_repeat_until', 'controls_if', 'controls_if_else', 'controls_wait_until', 'controls_stop'], colour: "#946100" },
+          { name: 'Sensors', blocks: ['sensor_is_color', 'sensor_reflection', 'sensor_color', 'sensor_reflected_light',
+            'sensor_is_pressed', 'sensor_pressure', 'sensor_is_closer_than', 'sensor_distance', 'sensor_reset_yaw_angle',
+            'sensor_yaw_angle', 'sensor_is_button_pressed', 'sensor_timer', 'sensor_reset_timer'], colour: "#1188a8" },
+          { name: 'Operators', blocks: ['operator_pick_random', 'operator_and', 'operator_or', 'operator_join',
+            'operator_not', 'operator_is_between', 'operator_char_at', 'operator_length', 'operator_contains'], colour: "#01933f" },
+          { name: 'Math', blocks: ['math_add', 'math_subtract', 'math_multiply', 'math_divide',
+            'math_less_than', 'math_greater_than', 'math_equal', 'math_not_equal', 'math_round',
+            'math_modulus', 'math_functions'], colour: "#920302" },
+          { name: 'Variables', blocks: ['variables_set', 'variables_get'], colour: "#a55b80" },
+          { name: 'Functions', blocks: ['procedures_defnoreturn', 'procedures_defreturn', 'procedures_callnoreturn', 'procedures_callreturn'], colour: "#995ba5" },
+          { name: 'Comments', blocks: ['comment', 'multiline_comment'], colour: "#aba85e" },
+        ].map((category) => (
+          <Category key={category.name} name={category.name} colour={category.colour}>
+            {category.blocks.map((block) => (
+              <Block key={block} type={block} />
+            ))}
           </Category>
-          <Category name="Movement" colour="#9f006f">
-          </Category>
-          <Category name="Light" colour="#320887">
-          </Category>
-          <Category name="Sound" colour="#610e8c">
-          </Category>
-          <Category name="Events" colour="#c4a005">
-          </Category>
-          <Category name="Control" colour="#946100">
-          </Category>
-          <Category name="Sensors" colour="#1188a8">
-          </Category>
-          <Category name="Operators" colour="#01933f">
-          </Category>
-          <Category name="Logic" colour="#b85e00">
-          </Category>
-          <Category name="Math" colour="#920302">
-          </Category>
-        </BlocklyComponent>
-      </div>
+        ))}
+      </BlocklyComponent>
     </div>
   );
 }

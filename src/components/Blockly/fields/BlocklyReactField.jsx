@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';  // Updated to use the new React 18 API
 import * as Blockly from 'blockly/core';
 
 class BlocklyReactField extends Blockly.Field {
@@ -11,7 +11,10 @@ class BlocklyReactField extends Blockly.Field {
 
   showEditor_() {
     this.div_ = Blockly.DropDownDiv.getContentDiv();
-    ReactDOM.render(this.render(), this.div_);
+    
+    // Use createRoot to render the component
+    this.reactRoot = ReactDOM.createRoot(this.div_);
+    this.reactRoot.render(this.render());
 
     var border = this.sourceBlock_.style.colourTertiary;
     border = border.colourBorder || border.colourLight;
@@ -24,7 +27,11 @@ class BlocklyReactField extends Blockly.Field {
   }
 
   dropdownDispose_() {
-    ReactDOM.unmountComponentAtNode(this.div_);
+    // Use root.unmount instead of unmountComponentAtNode
+    if (this.reactRoot) {
+      this.reactRoot.unmount();
+      this.reactRoot = null;
+    }
   }
 
   render() {
